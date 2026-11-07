@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qasria CI — Encaissez Wave &amp; Orange Money automatiquement dans votre hôtel</title>
+<meta name="description" content="Logiciel de gestion pour mini-hôtels et résidences meublées d'Abidjan : planning des chambres, confirmation automatique des paiements Wave et Orange Money, voucher envoyé sur WhatsApp. Essai gratuit 30 jours.">
+<style>
+  :root{--bg:#0b0d14;--card:#121626;--accent:#2fd47e;--accent2:#6c5ce7;--text:#e9ecf5;--muted:#9aa3b8;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:860px;margin:0 auto;padding:32px 20px 80px;}
+  header{text-align:center;padding:40px 0 20px;}
+  .badge{display:inline-block;background:rgba(47,212,126,.12);color:var(--accent);border:1px solid rgba(47,212,126,.3);border-radius:999px;padding:6px 14px;font-size:13px;margin-bottom:18px;}
+  h1{font-size:clamp(26px,5vw,42px);margin:0 0 14px;line-height:1.15;}
+  h1 span{color:var(--accent);}
+  .sub{color:var(--muted);font-size:17px;max-width:620px;margin:0 auto 28px;}
+  .demo{background:var(--card);border:1px solid #1f2438;border-radius:16px;padding:22px;margin:30px 0;}
+  .demo h2{margin:0 0 4px;font-size:18px;}
+  .demo .hint{color:var(--muted);font-size:13px;margin-bottom:16px;}
+  .panel{background:#0b0d14;border:1px solid #2a3150;border-radius:12px;padding:16px;}
+  .panel-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1f2438;font-size:14px;}
+  .panel-row:last-child{border-bottom:none;}
+  .room{color:var(--muted);}
+  .status-ok{color:var(--accent);font-weight:600;}
+  .status-wait{color:#e8b339;font-weight:600;}
+  .toast{margin-top:14px;background:rgba(47,212,126,.1);border:1px solid rgba(47,212,126,.35);border-radius:10px;padding:14px 16px;font-size:14px;}
+  .toast b{color:var(--accent);}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:36px 0;}
+  .card{background:var(--card);border:1px solid #1f2438;border-radius:14px;padding:22px;}
+  .card h3{margin:0 0 8px;font-size:17px;}
+  .card p{margin:0;color:var(--muted);font-size:14px;}
+  .price{background:linear-gradient(135deg,rgba(47,212,126,.08),rgba(108,92,231,.08));border:1px solid #1f2438;border-radius:16px;padding:28px;margin:36px 0;text-align:center;}
+  .price b{font-size:32px;color:var(--accent);}
+  .pay{display:flex;gap:12px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .pay span{background:#0b0d14;border:1px solid #2a3150;border-radius:8px;padding:6px 12px;font-size:13px;color:var(--muted);}
+  form{background:var(--card);border:1px solid #1f2438;border-radius:16px;padding:28px;margin-top:40px;}
+  form h2{margin-top:0;font-size:22px;}
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;}
+  input,textarea{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2a3150;background:#0b0d14;color:var(--text);font-size:15px;}
+  input:focus,textarea:focus{outline:2px solid var(--accent);}
+  button{margin-top:20px;width:100%;padding:14px;border:none;border-radius:10px;background:var(--accent);color:#06130c;font-weight:700;font-size:16px;cursor:pointer;}
+  button:disabled{opacity:.6;cursor:default;}
+  .hp{position:absolute;left:-9999px;}
+  .msg{margin-top:14px;font-size:14px;}
+  .msg.ok{color:var(--accent);}
+  .msg.err{color:#ff6b6b;}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:50px;}
+  .small{font-size:12px;color:var(--muted);margin-top:16px;text-align:center;}
+  ol{color:var(--muted);font-size:15px;padding-left:20px;}
+  ol li{margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">Hôtels &amp; résidences meublées · Cocody, Marcory, Plateau — Abidjan</span>
+    <h1>Ne perdez plus un paiement <span>Wave ou Orange Money</span></h1>
+    <p class="sub">Qasria CI confirme automatiquement les paiements Wave et Orange Money de vos clients, tient votre planning de chambres à jour et envoie le reçu sur WhatsApp — sans que vous ayez à vérifier chaque transaction à la main.</p>
+  </header>
+
+  <div class="demo">
+    <h2>Exemple : ce que voit le gérant dans Qasria CI</h2>
+    <div class="hint">Aperçu de la démo — planning du jour + confirmation automatique d'un paiement Wave</div>
+    <div class="panel">
+      <div class="panel-row"><span>Chambre 4 — M. Traoré, 2 nuits</span><span class="status-ok">Payé (Orange Money)</span></div>
+      <div class="panel-row"><span>Chambre 7 — Mme Koné, 1 nuit</span><span class="status-wait">En attente de paiement</span></div>
+      <div class="panel-row"><span>Chambre 12 — Mme Koné</span><span class="room">23 000 FCFA</span></div>
+    </div>
+    <div class="toast">✅ <b>Paiement Wave reçu</b> — 23 000 FCFA, Chambre 12 — confirmé automatiquement, voucher envoyé sur WhatsApp au client.</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>🗓️ Planning des chambres</h3>
+      <p>Toutes vos chambres et réservations sur un seul écran, à jour en temps réel, accessible depuis votre téléphone.</p>
+    </div>
+    <div class="card">
+      <h3>📲 Wave &amp; Orange Money automatiques</h3>
+      <p>Dès que le client paie, la réservation passe "confirmé" toute seule — plus besoin de vérifier chaque SMS ou capture d'écran.</p>
+    </div>
+    <div class="card">
+      <h3>💬 Voucher WhatsApp</h3>
+      <p>Le client reçoit sa confirmation de réservation directement sur WhatsApp, avec les détails de son séjour.</p>
+    </div>
+    <div class="card">
+      <h3>⚡ Prêt en quelques jours</h3>
+      <p>On configure vos chambres et vos tarifs avec vous, vous commencez à l'utiliser dès la première semaine.</p>
+    </div>
+  </div>
+
+  <div class="price">
+    <div>Abonnement mensuel</div>
+    <b>39 $ / mois</b>
+    <div style="color:var(--muted);font-size:14px;margin-top:6px">(≈ 23 800 FCFA/mois) · essai gratuit 30 jours, sans engagement</div>
+    <div class="pay"><span>Wave</span><span>Orange Money</span><span>WhatsApp</span></div>
+  </div>
+
+  <div class="card" style="margin-bottom:30px">
+    <h3>Comment ça marche</h3>
+    <ol>
+      <li>Vous remplissez le formulaire ci-dessous avec le nom de votre hôtel ou résidence.</li>
+      <li>On vous contacte sur WhatsApp ou par email pour vous montrer la démo avec vos propres chambres.</li>
+      <li>Vous testez gratuitement pendant 30 jours. Si ça vous aide, vous passez à 39 $/mois — sinon, vous arrêtez, aucun engagement.</li>
+    </ol>
+  </div>
+
+  <form id="leadForm">
+    <h2>Je veux tester Qasria CI gratuitement</h2>
+    <p style="color:var(--muted);font-size:14px;margin-top:-6px">Laissez vos coordonnées, on vous recontacte pour organiser la démo — aucune carte bancaire demandée.</p>
+    <input class="hp" type="text" name="website" id="website" autocomplete="off" tabindex="-1">
+    <label for="name">Votre nom</label>
+    <input id="name" required maxlength="80" placeholder="Votre nom">
+    <label for="phone">Téléphone / WhatsApp</label>
+    <input id="phone" required placeholder="+225 07 XX XX XX XX">
+    <label for="company">Nom de votre hôtel / résidence</label>
+    <input id="company" maxlength="120" placeholder="Ex: Résidence Les Palmiers, Cocody">
+    <label for="message">Nombre de chambres (optionnel)</label>
+    <textarea id="message" maxlength="1000" rows="3" placeholder="Ex: 8 chambres, principalement des clients Wave et Orange Money"></textarea>
+    <button type="submit" id="submitBtn">Demander la démo gratuite</button>
+    <div class="msg" id="formMsg"></div>
+  </form>
+
+  <p class="small">Qasria CI est un produit de QWIX GROUP. On vous contacte avant toute activation payante, aucune carte bancaire demandée sur ce site.</p>
+  <footer>© 2026 QWIX GROUP</footer>
+</div>
+
+<script>
+const LEAD_ENDPOINT = "https://automation.178-105-119-125.sslip.io/api/lead";
+const startTime = Date.now();
+const form = document.getElementById('leadForm');
+const msg = document.getElementById('formMsg');
+const btn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  btn.disabled = true;
+  msg.className = 'msg';
+  msg.textContent = 'Envoi...';
+  const payload = {
+    name: document.getElementById('name').value,
+    phone: document.getElementById('phone').value,
+    company: document.getElementById('company').value,
+    message: document.getElementById('message').value,
+    lang: 'fr',
+    source: 'qasria-ci-landing',
+    kind: 'task',
+    website: document.getElementById('website').value,
+    elapsedMs: Date.now() - startTime,
+  };
+  try {
+    const resp = await fetch(LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (resp.ok && data.ok !== false) {
+      msg.className = 'msg ok';
+      msg.textContent = 'Merci ! On vous contacte très vite sur WhatsApp ou par email.';
+      form.reset();
+    } else {
+      msg.className = 'msg err';
+      msg.textContent = 'Vérifiez votre nom et téléphone et réessayez.';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = "Échec de l'envoi. Réessayez dans un instant.";
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
